@@ -1,0 +1,130 @@
+name = "smb"
+version = "0.1.0"
+defaultTargets = ["Smb", "SmbData", "SmbMovies", "SmbGen", "Smb.UpperBound", "Smb.RefineRun", "Smb.FrameReuse", "Smb.Routine.FreshJump", "Smb.SymRun", "Smb.Routine.MoveObjectHorizontallyNes", "Smb.Routine.MoveObjectHorizontallyAlias", "Smb.Routine.ImposeGravityNes", "Smb.Routine.ImposeGravityOverflow", "Smb.Routine.ImposeGravityTas", "Smb.Routine.JumpStart", "Smb.Routine.MovePlayerVertically", "Smb.Routine.ImposeFriction", "Smb.Routine.MovePlayerHorizontally", "Smb.Routine.JumpSwimSub", "Smb.Routine.BlockBuffer", "Smb.Routine.Landing", "Smb.Routine.FloorClip", "Smb.Routine.FloorReach", "Smb.Routine.XPhysics", "Smb.Routine.FallingSub", "Smb.Routine.AnimSpeed", "Smb.Routine.AnimSpeedTas", "Smb.Routine.OnGround", "Smb.Routine.Climbing", "Smb.Routine.PhysicsCall", "Smb.Routine.GroundFrame", "Smb.Routine.WalkOff", "Smb.Routine.Jumpspring", "Smb.Routine.Lift", "Smb.Routine.SummaryCheck", "Smb.Routine.MovementSubs", "Smb.Routine.Scroll", "Smb.Routine.PlayerAux", "Smb.Routine.SideCheck", "Smb.Routine.FootCheck", "Smb.Routine.Stomp", "Smb.Routine.LandPlyr", "Smb.Routine.Firebar", "Smb.Routine.Impede", "Smb.Routine.HammerBro", "Smb.Routine.HeadBump", "Smb.Routine.All", "Smb.LocalBound.HorizontalDistance", "Smb.Goal.OneOne", "Smb.Goal.StartRun", "Smb.Goal.ExitRun", "Smb.Goal.FrameContract", "Smb.Goal.OpenFloor", "Smb.Goal.LaunchRun", "Smb.Routine.PlayPlayer", "Smb.Goal.PlayCycleSupported", "Smb.Goal.PlayCycleWitness", "Smb.Movement.JumpBand", "Smb.Buffer.NmiClear", "Smb.Buffer.StatusRecord", "Smb.Buffer.BlockRecord", "Smb.Buffer.PaletteRecord", "Smb.Buffer.StatusUpdate", "Smb.Buffer.SetupRecord", "Smb.Buffer.Renderer.ExactMoveStore", "Smb.Buffer.Renderer.GeneralAddressClasses", "Smb.Buffer.RenderAttribute", "Smb.Buffer.ColumnEnds", "Smb.Buffer.Window", "Smb.Buffer.Digits.DigitInvariant", "Smb.Buffer.ScheduleRom", "Smb.Routine.HeadHit", "Smb.Routine.FrameCollision", "Smb.Routine.PlayerSplit", "Smb.Routine.PlayLinks", "Smb.Routine.XInvNext", "Smb.Routine.PlayerBlock", "Smb.Routine.PlayKeep", "Smb.Routine.PlayerCtrlLink", "Smb.Routine.PlayerJoin", "Smb.Routine.FrameChain", "Smb.Routine.FrameCalls", "Smb.Routine.FramesBound", "Smb.Goal.ExitRunCycle", "Smb.Goal.LaunchRunCycle", "Smb.Routine.PlayKeepList", "Smb.Routine.FramesLaunch", "smbcheck"]
+
+# Lake assigns each module to the *last* library below that claims it.
+
+[[lean_lib]]
+name = "Smb"
+# The model: compiled to native code so `native_decide` runs it at native speed.
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbData"
+# The abstract vertical model, compiled for `native_decide` (a 2.5M-state search). A library of
+# its own because every module importing a precompiled library's module depends on that
+# library's whole shared object: kept out of `Smb`, it changes without rebuilding the routine
+# proofs.
+roots = []
+globs = ["Smb.Vertical", "Smb.Movement.Model", "Smb.Movement.Vertical", "Smb.Movement.Terrain"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbMovies"
+# Movie data and checks run on movies. Not compiled: their per-frame work is `NES.frame`,
+# already native in `Smb`, so the interpreted loop around it costs nothing; and a separate
+# precompiled library could not refer to `Smb`'s constants (Lake loads `Smb` after it).
+# Regenerating movie data rebuilds only these modules' importers.
+roots = []
+globs = ["Smb.Data.Tas", "Smb.Tas", "Smb.Certificates"]
+
+[[lean_lib]]
+name = "SmbTactics"
+# Symbolic-execution tactics and simprocs, and what they import: compiled so they run natively.
+roots = []
+globs = ["Smb.Plain", "Smb.Simprocs", "Smb.Symbolic", "Smb.StepGen", "Smb.StepLemmas", "Smb.StepLemmas.+", "Smb.SymRun"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbGen"
+# The summary generator and the generated ROM excerpt macros. Changing these rebuilds
+# their importers. The heavy work in sym_summary is simp and bv_decide, which run natively.
+roots = []
+globs = ["Smb.Summary", "Smb.Data.ProofRom"]
+
+[[lean_lib]]
+name = "SmbProofs"
+# Theorems only. Not compiled to C: `bv_decide` embeds its SAT certificates as auxiliary
+# definitions, and compiling those produced gigabytes of C for a single routine.
+roots = []
+globs = ["Smb.Movement.Launch", "Smb.Movement.LaunchCheck", "Smb.Refine", "Smb.RefineExec", "Smb.RefineRun", "Smb.FrameReuse", "Smb.UpperBound", "Smb.Routine.+", "Smb.LocalBound", "Smb.LocalBound.+", "Smb.Goal.+", "Smb.Buffer.+"]
+
+[[lean_lib]]
+name = "SmbBase"
+# The registers, below everything. Its own library because every module importing a precompiled library's
+# module depends on that library's whole shared object: `Smb` must not depend on the checker's.
+roots = []
+globs = ["Smb.Regs"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbAbs"
+# The checker for state descriptions and the fixpoint that computes tables for it, run natively by `native_decide`.
+roots = []
+globs = ["Smb.Abs.+"]
+precompileModules = true
+
+# Keep new general-play certificates out of SmbAbs's shared library, so adding
+# or changing their data does not invalidate every existing routine proof.
+[[lean_lib]]
+name = "SmbPlay"
+roots = []
+globs = ["Smb.PlayPlayerData", "Smb.PlaySpeedData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayTail"
+roots = []
+globs = ["Smb.PlayTailData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayParser"
+roots = []
+globs = ["Smb.PlayParserData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayEnemy"
+roots = []
+globs = ["Smb.PlayEnemyData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayFrame"
+roots = []
+globs = ["Smb.PlayFrameData"]
+precompileModules = true
+
+[[lean_exe]]
+name = "smbcheck"
+root = "Main"
+
+[[lean_exe]]
+name = "smbabs"
+root = "AbsMain"
+
+[[lean_lib]]
+name = "SmbHeadHit"
+roots = []
+globs = ["Smb.HeadHitData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbCollision"
+roots = []
+globs = ["Smb.CollisionData", "Smb.PlayerPostData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayerSplit"
+roots = []
+globs = ["Smb.PlayerPreData"]
+precompileModules = true
+
+[[lean_lib]]
+name = "SmbPlayerCtrl"
+roots = []
+globs = ["Smb.PlayerCtrlData", "Smb.CollisionBoundsData"]
+precompileModules = true
+

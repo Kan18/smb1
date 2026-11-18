@@ -1,0 +1,13 @@
+import Smb.Routine.PlayEnemyFront
+import Smb.Routine.PlayEnemyE0
+import Smb.Routine.PlayEnemyM0
+import Smb.Routine.PlayEnemyE1
+import Smb.Routine.PlayEnemyM1
+import Smb.Routine.PlayEnemyE2
+import Smb.Routine.PlayEnemyM2
+import Smb.Routine.PlayEnemyE3
+import Smb.Routine.PlayEnemyM3
+import Smb.Routine.PlayEnemyE4
+import Smb.Routine.PlayEnemyM4
+import Smb.Routine.PlayEnemyE5
+import Smb.Routine.PlayEnemyM5

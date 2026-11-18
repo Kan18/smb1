@@ -1,0 +1,30 @@
+# Local toolchain and user-supplied inputs.
+/.elan/
+/downloads/
+*.nes
+
+# Generated Lean inputs. Regenerate with lean/scripts/gen_data.py.
+/lean/Smb/Data/
+
+# Build products and replay output.
+/lean/.lake/
+# Local executables in emu/ have no extension.
+/emu/*
+!/emu/*.*
+!/emu/*/
+!/emu/Makefile
+/emu/dead_*.txt
+*.o
+*.dylib
+*.so
+*.ram
+*.polled
+*.aligned
+*.state
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+
+# Local investigations.
+/scratch/

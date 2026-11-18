@@ -1,0 +1,15 @@
+# Common settings for a region of the engine. Each line is a hint the run needs; see README.md.
+prot 86
+prot 6D
+prot 400
+prot 71A 71D
+global 57 0-28 D8-FF
+p 27 67
+track 0 F
+track 300
+cell 300 0 7 a d e 15 18 1c 1f 25 2a
+splitc 0 3
+splity 89EF 89F9
+splity 8600 8622
+promote 3
+max 7A120
